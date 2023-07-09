@@ -22,3 +22,4 @@ jsconfig.json
 .prettierrc
 .editorconfig
 .eslintrc.json
+firebase.js
