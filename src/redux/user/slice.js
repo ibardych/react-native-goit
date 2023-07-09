@@ -8,8 +8,6 @@ const initialState = {
     username: null,
     avatar: null,
   },
-  error: null,
-  isRefreshing: true,
   isLoggedIn: false,
   authError: null,
 };
@@ -19,57 +17,60 @@ const userSlice = createSlice({
   initialState,
   extraReducers: builder => {
     builder
-      .addCase(register.fulfilled, (state, action) => {
-        const { uid, email, username, avatar } = action.payload;
+      .addCase(register.fulfilled, (state, { payload }) => {
+        const { uid, email, username, avatar } = payload;
         state.user.id = uid;
         state.user.email = email;
         state.user.username = username;
         state.user.avatar = avatar;
         state.isLoggedIn = true;
       })
-      .addCase(register.rejected, (state, action) => {
-        console.log('payloadError: ', action.payload);
+      .addCase(register.rejected, (state, { payload }) => {
+        console.log('registerError: ', payload);
         state.isLoggedIn = false;
       })
-      .addCase(logIn.fulfilled, (state, action) => {
-        const { uid, email, username, avatar } = action.payload;
+      .addCase(logIn.fulfilled, (state, { payload }) => {
+        const { uid, email, username, avatar } = payload;
         state.user.id = uid;
         state.user.email = email;
         state.user.username = username;
         state.user.avatar = avatar;
         state.isLoggedIn = true;
       })
-      .addCase(logIn.rejected, (state, action) => {
-        console.log('payloadError: ', action.payload);
+      .addCase(logIn.rejected, (state, { payload }) => {
+        console.log('logInError: ', payload);
         state.isLoggedIn = false;
-        // state.authError = action.payload;
+        state.authError = payload;
       })
-      .addCase(logOut.fulfilled, (state, action) => {
+      .addCase(logOut.fulfilled, (state, { payload }) => {
         state.user = {};
-        // state.isLoggedIn = false;
-      })
-      .addCase(logOut.rejected, (state, action) => {
-        console.log('payloadError: ', action.payload);
         state.isLoggedIn = false;
-        // state.authError = action.payload;
       })
-      .addCase(getCurrentUser.fulfilled, (state, action) => {
-        console.log('payload: ', action.payload);
+      .addCase(logOut.rejected, (state, { payload }) => {
+        console.log('logOutErrror: ', payload);
+        state.isLoggedIn = false;
+        state.authError = payload;
+      })
+      .addCase(getCurrentUser.fulfilled, (state, { payload }) => {
+        console.log('payload: ', payload);
         state.isLoggedIn = true;
-        // const { uid, email } = action.payload;
+        // const { uid, email } = payload;
       })
-      .addCase(getCurrentUser.rejected, (state, action) => {
-        console.log('payloadError: ', action.payload);
+      .addCase(getCurrentUser.rejected, (state, { payload }) => {
+        console.log('getCurrentUserError: ', payload);
         state.isLoggedIn = false;
-        // state.authError = action.payload;
+        state.authError = payload;
       });
   },
   reducers: {
-    setIsLoggedIn(state, action) {
-      state.isLoggedIn = action.payload;
+    setIsLoggedIn(state, { payload }) {
+      state.isLoggedIn = payload;
+    },
+    unsetAuthError(state, { payload }) {
+      state.authError = '';
     },
   },
 });
 
-export const { setIsLoggedIn } = userSlice.actions;
+export const { setIsLoggedIn, unsetAuthError } = userSlice.actions;
 export const userReducer = userSlice.reducer;

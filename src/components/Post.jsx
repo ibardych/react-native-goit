@@ -3,12 +3,14 @@ import { useNavigation } from '@react-navigation/native';
 import { ImageBackground } from 'react-native';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { PropTypes } from 'prop-types';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { likePost } from '../redux/post/operations';
+import { ActivityIndicator } from 'react-native';
 
 const Post = props => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const likeLoading = useSelector(state => state.post.likeLoading);
 
   const post = props.post.item;
 
@@ -18,26 +20,36 @@ const Post = props => {
 
   return (
     <View style={styles.container}>
-      <ImageBackground
-        source={{ uri: post.imageURL }}
-        style={styles.image}
-        resizeMode={'cover'}
-      />
-      <TouchableOpacity
-        style={styles.author}
-        onPress={() => navigation.navigate('Profile')}
-      >
+      <View style={styles.imageWrapper}>
         <ImageBackground
-          source={
-            post.avatar
-              ? { uri: post.avatar }
-              : require('../../assets/images/avatar.png')
-          }
-          style={styles.authorImage}
+          source={{ uri: post.imageURL }}
+          style={styles.image}
           resizeMode={'cover'}
         />
-        <Text style={styles.date}>{post.date}</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.author}
+          onPress={() =>
+            navigation.navigate('AuthorProfile', {
+              user: {
+                id: post.uid,
+                avatar: post.avatar,
+                username: post.username,
+              },
+            })
+          }
+        >
+          <ImageBackground
+            source={
+              post.avatar
+                ? { uri: post.avatar }
+                : require('../../assets/images/avatar.png')
+            }
+            style={styles.authorImage}
+            resizeMode={'cover'}
+          />
+          <Text style={styles.date}>{post.date}</Text>
+        </TouchableOpacity>
+      </View>
       <Text style={styles.title}>{post.title}</Text>
       <View style={styles.infos}>
         <View style={styles.likecomments}>
@@ -63,6 +75,7 @@ const Post = props => {
               {post.likes?.length || 0}
             </Text>
           </TouchableOpacity>
+          {likeLoading === post.id && <ActivityIndicator color="#eaeaea" />}
         </View>
         <TouchableOpacity
           style={styles.location}
@@ -88,26 +101,28 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 16,
   },
+  imageWrapper: {
+    position: 'relative',
+    marginBottom: 8,
+  },
   image: {
     width: '100%',
     height: 240,
     borderRadius: 8,
     overflow: 'hidden',
-    marginBottom: 8,
   },
   author: {
     position: 'absolute',
-    bottom: 70,
-    right: 24,
+    bottom: 8,
+    right: 8,
     backgroundColor: 'rgba(255,255,255,0.9)',
     borderRadius: 20,
     paddingLeft: 3,
     paddingRight: 12,
-    paddingTop: 3,
-    paddingBottom: 3,
     flexDirection: 'row',
     gap: 6,
     alignItems: 'center',
+    height: 30,
   },
   authorImage: {
     width: 24,

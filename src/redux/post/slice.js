@@ -11,6 +11,8 @@ const initialState = {
   posts: [],
   postsbyUser: [],
   error: null,
+  postsLoading: false,
+  likeLoading: false,
 };
 
 const postSlice = createSlice({
@@ -18,33 +20,54 @@ const postSlice = createSlice({
   initialState,
   extraReducers: builder => {
     builder
-      .addCase(createPost.fulfilled, (state, action) => {
-        state.post = action.payload.post;
+      .addCase(createPost.fulfilled, (state, { payload }) => {
+        state.post = payload.post;
       })
-      .addCase(createPost.rejected, (state, action) => {
-        console.log('payloadError: ', action.payload);
+      .addCase(createPost.rejected, (state, { payload }) => {
+        console.log('createPostError: ', payload);
       })
-      .addCase(getPosts.fulfilled, (state, action) => {
-        state.posts = action.payload.posts;
+      .addCase(getPosts.pending, state => {
+        state.postsLoading = true;
       })
-      .addCase(getPosts.rejected, (state, action) => {
-        console.log('payloadError: ', action.payload);
+      .addCase(getPosts.fulfilled, (state, { payload }) => {
+        state.posts = payload.posts;
+        state.postsLoading = false;
       })
-      .addCase(getPostsByUser.fulfilled, (state, action) => {
-        state.postsbyUser = action.payload.posts;
+      .addCase(getPosts.rejected, (state, { payload }) => {
+        console.log('getPostError: ', payload);
+        state.postsLoading = false;
       })
-      .addCase(getPostsByUser.rejected, (state, action) => {
-        console.log('payloadError: ', action.payload);
+      .addCase(getPostsByUser.pending, state => {
+        state.postsLoading = true;
       })
-      .addCase(likePost.fulfilled, (state, action) => {
-        const { postid, likes, liked } = action.payload;
-        const index = state.posts.findIndex(obj => obj.id === postid);
-        state.posts[index].likes = likes;
-        state.posts[index].liked = liked;
+      .addCase(getPostsByUser.fulfilled, (state, { payload }) => {
+        state.postsbyUser = payload.posts;
+        state.postsLoading = false;
       })
-      .addCase(likePost.rejected, (state, action) => {
-        console.log('payloadError: ', action.payload);
-        // state.isLoggedIn = false;
+      .addCase(getPostsByUser.rejected, (state, { payload }) => {
+        console.log('getPostsByUserError: ', payload);
+        state.postsLoading = false;
+      })
+      .addCase(likePost.pending, (state, action) => {
+        const postId = action.meta.arg;
+        state.likeLoading = postId;
+      })
+      .addCase(likePost.fulfilled, (state, { payload }) => {
+        const { postid, likes, liked, postsByUser } = payload;
+        if (postsByUser) {
+          const index = state.postsbyUser.findIndex(obj => obj.id === postid);
+          state.postsbyUser[index].likes = likes;
+          state.postsbyUser[index].liked = liked;
+        } else {
+          const index = state.posts.findIndex(obj => obj.id === postid);
+          state.posts[index].likes = likes;
+          state.posts[index].liked = liked;
+        }
+        state.likeLoading = false;
+      })
+      .addCase(likePost.rejected, (state, { payload }) => {
+        console.log('likePostError: ', payload);
+        state.likeLoading = false;
       });
   },
 });

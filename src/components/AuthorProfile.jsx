@@ -5,10 +5,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
 import { logOut } from '../redux/user/operations';
 import { setIsLoggedIn } from '../redux/user/slice';
+import { PropTypes } from 'prop-types';
+import { ActivityIndicator } from 'react-native';
 
-const AuthorProfile = () => {
+const AuthorProfile = ({ author }) => {
   const dispatch = useDispatch();
   const user = useSelector(state => state.user.user);
+  const isLoading = useSelector(state => state.post.postsLoading);
 
   const handleLogOut = () => {
     dispatch(logOut());
@@ -16,33 +19,49 @@ const AuthorProfile = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.image}>
-        <ImageBackground
-          source={
-            user.avatar
-              ? { uri: user.avatar }
-              : require('../../assets/images/avatar.jpg')
-          }
-          style={styles.avatar}
-          resizeMode="cover"
-        />
-      </View>
+    <>
+      {author && (
+        <View style={styles.container}>
+          <View style={styles.image}>
+            <ImageBackground
+              source={
+                author.avatar
+                  ? { uri: author.avatar }
+                  : require('../../assets/images/avatar.png')
+              }
+              style={styles.avatar}
+              resizeMode="cover"
+            />
+          </View>
 
-      <MaterialIcons
-        style={styles.logoutIcon}
-        name={'logout'}
-        size={24}
-        color="#BDBDBD"
-        onPress={handleLogOut}
-      />
+          {author.id === user.id && (
+            <MaterialIcons
+              style={styles.logoutIcon}
+              name={'logout'}
+              size={24}
+              color="#BDBDBD"
+              onPress={handleLogOut}
+            />
+          )}
 
-      <Text style={styles.title}>{user.username}</Text>
-    </View>
+          <Text style={styles.title}>{author.username}</Text>
+
+          {isLoading && (
+            <View style={styles.loader}>
+              <ActivityIndicator color="#d7d7d7" />
+            </View>
+          )}
+        </View>
+      )}
+    </>
   );
 };
 
 export default AuthorProfile;
+
+AuthorProfile.propTypes = {
+  author: PropTypes.object,
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -84,5 +103,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 22,
     right: 16,
+  },
+  loader: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 40,
+    marginTop: -40,
+    position: 'relative',
+    top: 20,
   },
 });

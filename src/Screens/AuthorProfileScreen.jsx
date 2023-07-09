@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useIsFocused, useRoute } from '@react-navigation/native';
 import { getPostsByUser } from '../redux/post/operations';
 
-const ProfileScreen = () => {
+const AuthorProfileScreen = () => {
   const [author, setAuthor] = useState();
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
@@ -50,7 +50,7 @@ const ProfileScreen = () => {
   );
 };
 
-export default ProfileScreen;
+export default AuthorProfileScreen;
 
 const styles = StyleSheet.create({
   background: {

@@ -10,6 +10,7 @@ const initialState = {
   },
   comments: [],
   error: null,
+  isLoading: false,
 };
 
 const commentSlice = createSlice({
@@ -17,19 +18,23 @@ const commentSlice = createSlice({
   initialState,
   extraReducers: builder => {
     builder
-      .addCase(createComment.fulfilled, (state, action) => {
-        state.comment = action.payload.comment;
+      .addCase(createComment.fulfilled, (state, { payload }) => {
+        state.comment = payload.comment;
       })
-      .addCase(createComment.rejected, (state, action) => {
-        console.log('payloadError: ', action.payload);
+      .addCase(createComment.rejected, (state, { payload }) => {
+        console.log('payloadError: ', payload);
         state.isLoggedIn = false;
       })
-      .addCase(getComments.fulfilled, (state, action) => {
-        state.comments = action.payload.comments;
+      .addCase(getComments.pending, state => {
+        state.isLoading = true;
       })
-      .addCase(getComments.rejected, (state, action) => {
-        console.log('payloadError: ', action.payload);
-        state.isLoggedIn = false;
+      .addCase(getComments.fulfilled, (state, { payload }) => {
+        state.comments = payload.comments;
+        state.isLoading = false;
+      })
+      .addCase(getComments.rejected, (state, { payload }) => {
+        console.log('payloadError: ', payload);
+        state.isLoading = false;
       });
   },
 });

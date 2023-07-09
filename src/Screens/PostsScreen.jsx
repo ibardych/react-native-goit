@@ -5,11 +5,13 @@ import { useIsFocused } from '@react-navigation/native';
 import { getPosts } from '../redux/post/operations';
 import Author from '../components/Author';
 import Post from '../components/Post';
+import { ActivityIndicator } from 'react-native';
 
 const PostsScreen = () => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
   const posts = useSelector(state => state.post.posts);
+  const isLoading = useSelector(state => state.post.postsLoading);
 
   useEffect(() => {
     if (isFocused) {
@@ -23,6 +25,11 @@ const PostsScreen = () => {
 
   return (
     <View style={styles.container}>
+      {isLoading && (
+        <View style={styles.loader}>
+          <ActivityIndicator color="#d7d7d7" />
+        </View>
+      )}
       {!!posts.length && (
         <FlatList
           ListHeaderComponent={Author}
@@ -49,5 +56,10 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 32,
+  },
+  loader: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 40,
   },
 });

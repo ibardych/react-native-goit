@@ -1,13 +1,15 @@
 import { ImageBackground, KeyboardAvoidingView } from 'react-native';
 import { Dimensions, Platform, TextInput, View } from 'react-native';
 import { StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import Comment from '../components/Comment';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused, useRoute } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { createComment, getComments } from '../redux/comment/operations';
+import { ActivityIndicator } from 'react-native';
+import { Keyboard } from 'react-native';
 
 const containerPadding = 16;
 const screenWidth = Dimensions.get('window').width;
@@ -15,23 +17,34 @@ const screenWidth = Dimensions.get('window').width;
 const CommentsScreen = () => {
   const dispatch = useDispatch();
   const [comment, setComment] = useState('');
+  const [pendingComment, setPendingComment] = useState(false);
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
   const comments = useSelector(state => state.comment.comments);
   const route = useRoute();
   const { id: postid, imageURL } = route.params.post;
   const newComment = useSelector(state => state.comment.comment);
+  const isLoading = useSelector(state => state.comment.isLoading);
+  const scrollViewRef = useRef(null);
 
   useEffect(() => {
     if (isFocused) {
       (async () => {
         await dispatch(getComments(postid));
+        if (pendingComment) {
+          setTimeout(() => {
+            scrollViewRef.current.scrollToEnd({ animated: true });
+            setPendingComment(false);
+          }, 300);
+        }
       })();
     }
   }, [isFocused, newComment]);
 
   const sendComment = async () => {
     if (comment) {
+      Keyboard.dismiss();
+      setPendingComment(true);
       await dispatch(createComment({ postid, comment }));
       setComment('');
     }
@@ -39,11 +52,18 @@ const CommentsScreen = () => {
 
   const PostImage = () => {
     return (
-      <ImageBackground
-        style={styles.image}
-        source={{ uri: imageURL }}
-        resizeMode="cover"
-      />
+      <>
+        <ImageBackground
+          style={styles.image}
+          source={{ uri: imageURL }}
+          resizeMode="cover"
+        />
+        {isLoading && (
+          <View style={styles.loader}>
+            <ActivityIndicator color="#d7d7d7" />
+          </View>
+        )}
+      </>
     );
   };
 
@@ -53,6 +73,7 @@ const CommentsScreen = () => {
     <View>
       <View style={{ minHeight: '100%' }}>
         <FlatList
+          ref={scrollViewRef}
           ListHeaderComponent={PostImage}
           data={comments}
           renderItem={comment => <Comment comment={comment} />}
@@ -165,5 +186,10 @@ const styles = StyleSheet.create({
     right: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  loader: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 40,
   },
 });

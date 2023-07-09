@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TouchableWithoutFeedback, KeyboardAvoidingView } from 'react-native';
 import { ImageBackground, Keyboard, Platform, StyleSheet } from 'react-native';
 import { Text, TextInput, View, TouchableOpacity } from 'react-native';
@@ -7,17 +7,26 @@ import Link from '../components/Link';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import * as yup from 'yup';
 import { useFormik } from 'formik';
-import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
 import { register } from '../redux/user/operations';
 import * as ImagePicker from 'expo-image-picker';
+import { unsetAuthError } from '../redux/user/slice';
 // import * as MediaLibrary from 'expo-media-library';
 
 const RegistrationScreen = () => {
   const [passwordShown, setPasswordShown] = useState(false);
   const [image, setImage] = useState();
   const navigation = useNavigation();
+  const authError = useSelector(state => state.user.authError);
   const dispatch = useDispatch();
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) {
+      dispatch(unsetAuthError());
+    }
+  }, [isFocused]);
 
   const togglePasswordShown = () => {
     setPasswordShown(!passwordShown);
@@ -163,6 +172,7 @@ const RegistrationScreen = () => {
           <Link onPress={() => navigation.navigate('Login')}>
             Already have an account? Sign in.
           </Link>
+          {authError && <Text style={styles.authError}>{authError}</Text>}
         </View>
       </View>
     </TouchableWithoutFeedback>
@@ -264,5 +274,21 @@ const styles = StyleSheet.create({
     left: 16,
     fontSize: 12,
     color: 'red',
+  },
+  authError: {
+    fontSize: 12,
+    color: '#333',
+    height: 30,
+    marginBottom: -30,
+    position: 'relative',
+    top: 20,
+    backgroundColor: '#f5f5f5',
+    paddingTop: 7,
+    paddingLeft: 12,
+    paddingRight: 12,
+    borderRadius: 7,
+    borderColor: 'red',
+    borderWidth: 1,
+    fontFamily: 'primary500',
   },
 });

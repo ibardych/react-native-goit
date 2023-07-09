@@ -26,7 +26,17 @@ const Comment = props => {
 
   return (
     <View style={commentWrapperStyles}>
-      <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate('AuthorProfile', {
+            user: {
+              id: comment.uid,
+              avatar: comment.avatar,
+              username: comment.username,
+            },
+          })
+        }
+      >
         <ImageBackground
           style={styles.authorPhoto}
           source={

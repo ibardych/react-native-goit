@@ -16,6 +16,7 @@ import { Text } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { logOut } from '../redux/user/operations';
 import { setIsLoggedIn } from '../redux/user/slice';
+import AuthorProfileScreen from './AuthorProfileScreen';
 
 const Tabs = createBottomTabNavigator();
 
@@ -55,7 +56,10 @@ const HomeScreen = () => {
         tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: 'tomato',
         tabBarInactiveTintColor: 'grey',
-        headerShown: route.name === 'Profile' ? false : true,
+        headerShown:
+          route.name === 'Profile' || route.name === 'AuthorProfile'
+            ? false
+            : true,
         headerTitle: () => {
           return (
             <View style={styles.header}>
@@ -105,6 +109,13 @@ const HomeScreen = () => {
         component={ProfileScreen}
         options={{
           tabBarLabel: '',
+        }}
+      />
+      <Tabs.Screen
+        name="AuthorProfile"
+        component={AuthorProfileScreen}
+        options={{
+          tabBarButton: () => null,
         }}
       />
     </Tabs.Navigator>

@@ -76,8 +76,7 @@ export const getPosts = createAsyncThunk('post/getall', async (_, thunkAPI) => {
 
       const docRef = doc(db, 'users', uid);
       const docSnap = await getDoc(docRef);
-      let photoURL;
-      if (docSnap.exists()) photoURL = docSnap.data().photoURL;
+      const author = docSnap.data();
 
       posts.push({
         id: post.id,
@@ -90,7 +89,8 @@ export const getPosts = createAsyncThunk('post/getall', async (_, thunkAPI) => {
         commentsNumber,
         likes,
         liked: likes ? likes.indexOf(user.uid) !== -1 : false,
-        avatar: photoURL,
+        avatar: author.photoURL,
+        username: author.username,
       });
     }
 
@@ -102,14 +102,14 @@ export const getPosts = createAsyncThunk('post/getall', async (_, thunkAPI) => {
 
 export const getPostsByUser = createAsyncThunk(
   'post/getallbyuser',
-  async (_, thunkAPI) => {
+  async (userId, thunkAPI) => {
     try {
       const user = auth.currentUser;
       const collectionRef = collection(db, 'posts');
       const q = query(
         collectionRef,
         orderBy('timestamp', 'desc'),
-        where('uid', '==', user.uid)
+        where('uid', '==', userId)
       );
       const querySnapshot = await getDocs(q);
 
@@ -123,15 +123,14 @@ export const getPostsByUser = createAsyncThunk(
         commentsNumber = await countEntries({
           collection: 'comments',
           by: 'postid',
-          query: doc.id,
+          query: post.id,
         });
 
         const date = formatDate(timestamp);
 
         const docRef = doc(db, 'users', uid);
         const docSnap = await getDoc(docRef);
-        let photoURL;
-        if (docSnap.exists()) photoURL = docSnap.data().photoURL;
+        const author = docSnap.data();
 
         posts.push({
           id: post.id,
@@ -144,7 +143,8 @@ export const getPostsByUser = createAsyncThunk(
           commentsNumber,
           likes,
           liked: likes ? likes.indexOf(user.uid) !== -1 : false,
-          avatar: photoURL,
+          avatar: author.photoURL,
+          username: author.username,
         });
       }
 
@@ -166,9 +166,11 @@ export const likePost = createAsyncThunk(
       const docSnapshot = await getDoc(docRef);
       let newLikes = [];
       let liked = false;
+      let postsByUser = false;
 
       if (docSnapshot.exists()) {
-        const likes = docSnapshot.data()['likes'] || [];
+        const post = docSnapshot.data();
+        const likes = post.likes || [];
         liked = likes.indexOf(uid) !== -1;
 
         newLikes = likes.filter(item => item !== uid);
@@ -181,12 +183,14 @@ export const likePost = createAsyncThunk(
           liked = false;
         }
 
+        postsByUser = post.uid === uid;
+
         await updateDoc(docRef, { likes: newLikes });
       } else {
         console.log('Post does not exist.');
       }
 
-      return { postid, likes: newLikes, liked };
+      return { postid, likes: newLikes, liked, postsByUser };
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }

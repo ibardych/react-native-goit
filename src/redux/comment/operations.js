@@ -68,8 +68,7 @@ export const getComments = createAsyncThunk(
 
         const docRef = doc(db, 'users', uid);
         const docSnap = await getDoc(docRef);
-        let photoURL;
-        if (docSnap.exists()) photoURL = docSnap.data().photoURL;
+        const author = docSnap.data();
 
         comments.push({
           id: comment.id,
@@ -78,7 +77,8 @@ export const getComments = createAsyncThunk(
           text,
           date,
           owner: user.uid === uid ? true : false,
-          avatar: user.uid === uid ? user.photoURL : photoURL,
+          avatar: author.photoURL,
+          username: author.username,
         });
       }
 
