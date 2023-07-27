@@ -12,7 +12,7 @@ const Author = () => {
         source={
           user.avatar
             ? { uri: user.avatar }
-            : require('../../assets/images/avatar.jpg')
+            : require('../../assets/images/avatar.png')
         }
         style={styles.avatar}
         resizeMode={'cover'}
